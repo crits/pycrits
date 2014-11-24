@@ -89,7 +89,7 @@ class pycrits(object):
                 results = json.loads(resp.text)
             except:
                 raise pycritsFetchError("Unable to load JSON.")
-            yield results['objects']
+            yield results
             next_ = results['meta']['next']
             if next_:
                 url = self._host + next_
