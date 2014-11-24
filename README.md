@@ -20,7 +20,7 @@ get an empty list back. These are all fetching the same file.
 
 ```
 >>> from pycrits import pycrits
->>> crits = pycrits('http://localhost:8000', 'wxs', 'c7017158803056f823486adb58d7d67a0b344ce7')
+>>> crits = pycrits('http://localhost:8000', 'wxs', '<api_key>')
 >>> x = crits.fetch_pcap(md5='67cc75e608b4f37ed993bf84fafafb9d')
 >>> print len(x[0]['data'])
 22279
