@@ -93,6 +93,7 @@ class pycrits(object):
             next_ = results['meta']['next']
             if next_:
                 url = self._host + next_
+                params={}
 
     def indicators(self, params={}):
         return self._fetch(self._INDICATORS, params)
