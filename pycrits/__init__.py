@@ -1,5 +1,9 @@
 import json
+import zipfile
 import requests
+
+from zipfile import ZipFile
+from StringIO import StringIO
 
 class pycritsFetchError(Exception):
     def __init__(self, message):
@@ -26,6 +30,9 @@ class pycrits(object):
     _SAMPLES = 'samples/'
     _SCREENSHOTS = 'screenshots/'
     _TARGETS = 'targets/'
+
+    # The password for zip files.
+    _PASSWORD = 'infected'
 
     def __init__(self, host, username, api_key):
         self._base_url = host + self._API_VERSION
@@ -128,3 +135,63 @@ class pycrits(object):
 
     def targets(self, params={}):
         return self._fetch(self._TARGETS, params)
+
+    def _fetch_binary(self, url, id_=None, params={}):
+        params['username'] = self._username
+        params['api_key'] = self._api_key
+        params['file'] = 1
+        url = self._base_url + url
+        if id_:
+            url += id_ + '/'
+
+        resp = requests.get(url, params=params, verify=self._verify)
+        if resp.status_code != 200:
+            raise pycritsFetchError("Response code: %s" % resp.status_code)
+
+        return StringIO(resp.content)
+
+    # If not a zip file (ie: "No files found") just return an empty list.
+    def _unzip_file(self, file_):
+        results = []
+        if not zipfile.is_zipfile(file_):
+            return results
+
+        try:
+            zf = ZipFile(file_, 'r')
+            filelist = zf.infolist()
+
+            for fileentry in filelist:
+                unzipped_file = zf.open(fileentry, pwd=self._PASSWORD).read()
+                results.append({'filename': fileentry.filename,
+                                'data': unzipped_file})
+        except Exception as e:
+            zf.close()
+            file_.close()
+            raise
+
+        zf.close()
+        file_.close()
+        return results
+
+    def fetch_sample(self, md5=None, sha256=None, id_=None, params={}):
+        if md5:
+            params['c-md5'] = md5
+            file_ = self._fetch_binary(self._SAMPLES, params=params)
+        elif sha256:
+            params['c-sha256'] = sha256
+            file_ = self._fetch_binary(self._SAMPLES, params=params)
+        elif id_:
+            file_ = self._fetch_binary(self._SAMPLES, id_=id_, params=params)
+        else:
+            file_ = self._fetch_binary(self._SAMPLES, params=params)
+        return self._unzip_file(file_)
+
+    def fetch_pcap(self, md5=None, id_=None, params={}):
+        if md5:
+            params['c-md5'] = md5
+            file_ = self._fetch_binary(self._PCAPS, params=params)
+        elif id_:
+            file_ = self._fetch_binary(self._PCAPS, id_=id_, params=params)
+        else:
+            file_ = self._fetch_binary(self._PCAPS, params=params)
+        return self._unzip_file(file_)
