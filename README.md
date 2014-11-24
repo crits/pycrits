@@ -3,9 +3,8 @@ pycrits
 
 Python interface to the CRITs API.
 
-This is currently very minimal. It only supports GETs.
-
-Here's some basic usage:
+This is currently very minimal. It only supports GETs. I'll write docs once
+things become stable, but for now here is some basic usage:
 
 ```
 from pycrits import pycrits
@@ -31,4 +30,14 @@ get an empty list back. These are all fetching the same file.
 >>> print len(x[0]['data'])
 22279
 >>>
+```
+
+Here's an example of using sample_count() to get a count of number of samples
+that are over 1MB in size:
+
+```
+from pycrits import pycrits
+crits = pycrits('http://localhost:8000', 'wxs', '<api_key>')
+params = {'c-size__gte': 1024 * 1024}
+print crits.sample_count(params=params)
 ```
