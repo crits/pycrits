@@ -11,7 +11,7 @@ from pycrits import pycrits
 
 crits = pycrits('http://localhost:8000', 'wxs', '<api_key>')
 for batch in crits.indicators():
-    print len(batch['objects'])
+    print len(batch)
 ```
 
 Here's an example of how to fetch a PCAP. If nothing is found you will
