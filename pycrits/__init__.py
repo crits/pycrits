@@ -103,7 +103,7 @@ class pycrits(object):
         next_ = True
         while next_:
             results = self._do_fetch(url, params)
-            yield results
+            yield results['objects']
             next_ = results['meta']['next']
             if next_:
                 url = self._host + next_
