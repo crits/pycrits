@@ -10,8 +10,8 @@ things become stable, but for now here is some basic usage:
 from pycrits import pycrits
 
 crits = pycrits('http://localhost:8000', 'wxs', '<api_key>')
-for batch in crits.indicators():
-    print len(batch)
+for obj in crits.indicators():
+    print obj['value']
 ```
 
 Here's an example of how to fetch a PCAP. If nothing is found you will

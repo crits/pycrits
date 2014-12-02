@@ -15,21 +15,22 @@ class pycritsFetchError(Exception):
 class pycrits(object):
     # XXX: Currently only supports GETs. This means not all API endpoints are
     # supported.
-    _API_VERSION = '/api/v1/'
-    _INDICATORS = 'indicators/'
-    _ACTORS = 'actors/'
+    _API_VERSION       = '/api/v1/'
+    _INDICATORS        = 'indicators/'
+    _ACTORS            = 'actors/'
     _ACTOR_IDENTIFIERS = 'actoridentifiers/'
-    _CAMPAIGNS = 'campaigns/'
-    _CERTIFICATES = 'certificates/'
-    _DOMAINS = 'domains/'
-    _EMAILS = 'emails/'
-    _EVENTS = 'events/'
-    _INDICATORS = 'indicators/'
-    _PCAPS = 'pcaps/'
-    _RAW_DATA = 'raw_data/'
-    _SAMPLES = 'samples/'
-    _SCREENSHOTS = 'screenshots/'
-    _TARGETS = 'targets/'
+    _CAMPAIGNS         = 'campaigns/'
+    _CERTIFICATES      = 'certificates/'
+    _DOMAINS           = 'domains/'
+    _EMAILS            = 'emails/'
+    _EVENTS            = 'events/'
+    _INDICATORS        = 'indicators/'
+    _IPS               = 'ips/'
+    _PCAPS             = 'pcaps/'
+    _RAW_DATA          = 'raw_data/'
+    _SAMPLES           = 'samples/'
+    _SCREENSHOTS       = 'screenshots/'
+    _TARGETS           = 'targets/'
 
     # The password for zip files.
     _PASSWORD = 'infected'
@@ -103,14 +104,12 @@ class pycrits(object):
         next_ = True
         while next_:
             results = self._do_fetch(url, params)
-            yield results['objects']
+            for obj in results['objects']:
+                yield obj
             next_ = results['meta']['next']
             if next_:
                 url = self._host + next_
-                params={}
-
-    def indicators(self, params={}):
-        return self._fetch_generator(self._INDICATORS, params)
+                params = {}
 
     def actors(self, params={}):
         return self._fetch_generator(self._ACTORS, params)
@@ -136,10 +135,13 @@ class pycrits(object):
     def indicators(self, params={}):
         return self._fetch_generator(self._INDICATORS, params)
 
+    def ips(self, params={}):
+        return self._fetch_generator(self._IPS, params)
+
     def pcaps(self, params={}):
         return self._fetch_generator(self._PCAPS, params)
 
-    def raw_data(self, params={}):
+    def raw_datas(self, params={}):
         return self._fetch_generator(self._RAW_DATA, params)
 
     def samples(self, params={}):
@@ -150,6 +152,55 @@ class pycrits(object):
 
     def targets(self, params={}):
         return self._fetch_generator(self._TARGETS, params)
+
+    # Fetch a single item given the ID.
+    def actor(self, id_, params={}):
+        return self._single_fetch(self._ACTORS + id_ + '/', params)
+
+    def actor_identifier(self, id_, params={}):
+        return self._single_fetch(self._ACTOR_IDENTIFIERS + id_ + '/', params)
+
+    def campaign(self, id_, params={}):
+        return self._single_fetch(self._CAMPAIGNS + id_ + '/', params)
+
+    def certificate(self, id_, params={}):
+        return self._single_fetch(self._CERTIFICATES + id_ + '/', params)
+
+    def domain(self, id_, params={}):
+        return self._single_fetch(self._DOMAINS + id_ + '/', params)
+
+    def email(self, id_, params={}):
+        return self._single_fetch(self._EMAILS + id_ + '/', params)
+
+    def event(self, id_, params={}):
+        return self._single_fetch(self._EVENTS + id_ + '/', params)
+
+    def indicator(self, id_, params={}):
+        return self._single_fetch(self._INDICATORS + id_ + '/', params)
+
+    def ip(self, id_, params={}):
+        return self._single_fetch(self._IPS + id_ + '/', params)
+
+    def pcap(self, id_, params={}):
+        return self._single_fetch(self._PCAPS + id_ + '/', params)
+
+    def raw_data(self, id_, params={}):
+        return self._single_fetch(self._RAW_DATA + id_ + '/', params)
+
+    def sample(self, id_, params={}):
+        return self._single_fetch(self._SAMPLES + id_ + '/', params)
+
+    def screenshot(self, id_, params={}):
+        return self._single_fetch(self._SCREENSHOTS + id_ + '/', params)
+
+    def target(self, id_, params={}):
+        return self._single_fetch(self._TARGETS + id_ + '/', params)
+
+    # Fetch a campaign by name.
+    def campaign_by_name(self, name, params={}):
+        params['c-name'] = name
+        results = self._single_fetch(self._CAMPAIGNS, params)
+        return results['objects']
 
     # Force limit to 1 and only return _id.
     def _fetch_count(self, url, params={}):
