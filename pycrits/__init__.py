@@ -1,5 +1,6 @@
 import json
 import zipfile
+import hashlib
 import requests
 
 from zipfile import ZipFile
@@ -13,8 +14,6 @@ class pycritsFetchError(Exception):
         return self.message
 
 class pycrits(object):
-    # XXX: Currently only supports GETs. This means not all API endpoints are
-    # supported.
     _API_VERSION       = '/api/v1/'
     _INDICATORS        = 'indicators/'
     _ACTORS            = 'actors/'
@@ -31,6 +30,9 @@ class pycrits(object):
     _SAMPLES           = 'samples/'
     _SCREENSHOTS       = 'screenshots/'
     _TARGETS           = 'targets/'
+
+    # POST only.
+    _RELATIONSHIPS = 'relationships/'
 
     # The password for zip files.
     _PASSWORD = 'infected'
@@ -74,6 +76,23 @@ class pycrits(object):
     @verify.setter
     def verify(self, value):
         self._verify = bool(value)
+
+    # Used for posting.
+    def _post(self, url, params={}, files=None):
+        params['username'] = self._username
+        params['api_key'] = self._api_key
+        url = self._base_url + url
+        resp = requests.post(url, data=params, files=files, verify=self._verify)
+        if resp.status_code != 200:
+            print resp.text
+            raise pycritsFetchError("Response code: %s" % resp.status_code)
+
+        try:
+            results = json.loads(resp.text)
+        except:
+            raise pycritsFetchError("Unable to load JSON.")
+
+        return results
 
     # Actually do the fetching.
     def _do_fetch(self, url, params={}):
@@ -310,3 +329,131 @@ class pycrits(object):
         else:
             file_ = self._fetch_binary(self._PCAPS, params=params)
         return self._unzip_file(file_)
+
+    # Helper to handle file uploads.
+    # Take either a path to a file on disk or a file object.
+    # If given both, the filepath will take precedence.
+    # If we don't have a filename, use the md5 of the data.
+    def _get_file_data(self, file_obj, filepath, filename):
+        if not file_obj and not filepath:
+            return None
+
+        if filepath:
+            file_obj = open(filepath, 'rb')
+
+        if not filename:
+            filename = hashlib.md5(file_obj.read()).hexdigest()
+            file_obj.seek(0)
+
+        return {'filedata': (filename, file_obj)}
+
+    # Add objects to CRITs.
+    def add_actor(self, name, source, params={}):
+        params['name'] = name
+        return self._post(self._ACTORS, params)
+
+    def add_actor_identifier(self, id_type, id_, source, params={}):
+        params['identifier_type'] = id_type
+        params['identifier'] = id_
+        params['source'] = source
+        return self._post(self._ACTOR_IDENTIFIERS, params)
+
+    def add_campaign(self, name, params={}):
+        params['name'] = name
+        return self._post(self._CAMPAIGNS, params)
+
+    def add_certificate(self, source, file_obj=None, filepath=None,
+                        filename=None, params={}):
+        if not file_obj and not filepath:
+            raise pycritsFetchError("Need a file object or filepath")
+
+        files = self._get_file_data(file_obj, filepath, filename)
+
+        params['source'] = source
+        return self._post(self._CERTIFICATES, params, files=files)
+
+    def add_domain(self, domain, source, params={}):
+        params['domain'] = domain
+        params['source'] = source
+        return self._post(self._DOMAINS, params)
+
+    def add_email(self, type_, source, file_obj=None, filepath=None,
+                  filename=None, params={}):
+        files = self._get_file_data(file_obj, filepath, filename)
+
+        params['upload_type'] = type_
+        params['source'] = source
+        return self._post(self._EMAILS, params, files=files)
+
+    def add_event(self, type_, title, description, source, params={}):
+        params['event_type'] = type_
+        params['title'] = title
+        params['description'] = description
+        params['source'] = source
+        return self._post(self._EVENTS, params)
+
+    def add_indicator(self, type_, value, source, params={}):
+        params['type'] = type_
+        params['value'] = value
+        params['source'] = source
+        return self._post(self._INDICATORS, params)
+
+    def add_ip(self, ip, type_, source, params={}):
+        params['source'] = source
+        params['ip'] = ip
+        params['ip_type'] = type_
+        return self._post(self._IPS, params)
+
+    def add_pcap(self, source, file_obj=None, filepath=None, filename=None,
+                 params={}):
+        if not file_obj and not filepath:
+            raise pycritsFetchError("Need a file object or filepath")
+
+        files = self._get_file_data(file_obj, filepath, filename)
+
+        params['source'] = source
+        return self._post(self._PCAPS, params, files=files)
+
+    def add_raw_data(self, type_, title, data_type, source, data=None,
+                     file_obj=None, filepath=None, filename=None, params={}):
+        files = self._get_file_data(file_obj, filepath, filename)
+
+        params['data'] = data
+        params['upload_type'] = type_
+        params['title'] = title
+        params['data_type'] = data_type
+        params['source'] = source
+        return self._post(self._RAW_DATA, params, files=files)
+
+    def add_sample(self, type_, source, file_obj=None, filepath=None,
+                   filename=None, params={}):
+        files = self._get_file_data(file_obj, filepath, filename)
+
+        # Set filename so it is honored for metadata uploads too.
+        params['upload_type'] = type_
+        params['filename'] = filename
+        params['source'] = source
+        return self._post(self._SAMPLES, params, files=files)
+
+    def add_screenshot(self, type_, oid, otype, source, file_obj=None,
+                       filepath=None, filename=None, params={}):
+        files = self._get_file_data(file_obj, filepath, filename)
+
+        params['upload_type'] = type_
+        params['oid'] = oid
+        params['otype'] = otype
+        params['source'] = source
+        return self._post(self._SCREENSHOTS, params, files=files)
+
+    def add_target(self, email, params={}):
+        params['email_address'] = email
+        return self._post(self._TARGETS, params)
+
+    def add_relationship(self, left_type, left_id, right_type, right_id,
+                         rel_type, params={}):
+        params['left_type'] = left_type
+        params['right_type'] = right_type
+        params['left_id'] = left_id
+        params['right_id'] = right_id
+        params['rel_type'] = rel_type
+        return self._post(self._RELATIONSHIPS, params)
