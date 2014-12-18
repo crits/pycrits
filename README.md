@@ -3,8 +3,11 @@ pycrits
 
 Python interface to the CRITs API.
 
-This is currently very minimal. It only supports GETs. I'll write docs once
-things become stable, but for now here is some basic usage:
+This is currently very minimal. Fetching data is pretty stable but the API for
+submitting data to CRITs is still alpha.
+
+I'll write docs once things become stable, but for now here is some basic
+usage:
 
 You will need the Requests Python module to use this.
 
