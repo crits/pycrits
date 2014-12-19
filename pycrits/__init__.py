@@ -84,7 +84,6 @@ class pycrits(object):
         url = self._base_url + url
         resp = requests.post(url, data=params, files=files, verify=self._verify)
         if resp.status_code != 200:
-            print resp.text
             raise pycritsFetchError("Response code: %s" % resp.status_code)
 
         try:
