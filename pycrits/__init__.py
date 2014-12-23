@@ -23,7 +23,6 @@ class pycrits(object):
     _DOMAINS           = 'domains/'
     _EMAILS            = 'emails/'
     _EVENTS            = 'events/'
-    _INDICATORS        = 'indicators/'
     _IPS               = 'ips/'
     _PCAPS             = 'pcaps/'
     _RAW_DATA          = 'raw_data/'
@@ -59,7 +58,7 @@ class pycrits(object):
 
     @username.setter
     def username(self, value):
-        return self_username
+        self._username = value
 
     @property
     def api_key(self):
