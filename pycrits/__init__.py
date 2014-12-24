@@ -15,7 +15,6 @@ class pycritsFetchError(Exception):
 
 class pycrits(object):
     _API_VERSION       = '/api/v1/'
-    _INDICATORS        = 'indicators/'
     _ACTORS            = 'actors/'
     _ACTOR_IDENTIFIERS = 'actoridentifiers/'
     _CAMPAIGNS         = 'campaigns/'
@@ -23,6 +22,7 @@ class pycrits(object):
     _DOMAINS           = 'domains/'
     _EMAILS            = 'emails/'
     _EVENTS            = 'events/'
+    _INDICATORS        = 'indicators/'
     _IPS               = 'ips/'
     _PCAPS             = 'pcaps/'
     _RAW_DATA          = 'raw_data/'
