@@ -114,62 +114,68 @@ class pycrits(object):
         return self._do_fetch(url, params=params)
 
     # Fetch and yield a generator. Iterations will continue to fetch.
-    def _fetch_generator(self, url, params={}):
+    def _fetch_generator(self, url, total, params={}):
         params['username'] = self._username
         params['api_key'] = self._api_key
         url = self._base_url + url
+
+        if total == 0:
+            yield None
 
         next_ = True
         while next_:
             results = self._do_fetch(url, params)
             for obj in results['objects']:
+                if total == 0:
+                    raise StopIteration
                 yield obj
+                total -= 1
             next_ = results['meta']['next']
             if next_:
                 url = self._host + next_
                 params = {}
 
-    def actors(self, params={}):
-        return self._fetch_generator(self._ACTORS, params)
+    def actors(self, params={}, total=-1):
+        return self._fetch_generator(self._ACTORS, total, params=params)
 
-    def actor_identifiers(self, params={}):
-        return self._fetch_generator(self._ACTOR_IDENTIFIERS, params)
+    def actor_identifiers(self, params={}, total=-1):
+        return self._fetch_generator(self._ACTOR_IDENTIFIERS, total, params=params)
 
-    def campaigns(self, params={}):
-        return self._fetch_generator(self._CAMPAIGNS, params)
+    def campaigns(self, params={}, total=-1):
+        return self._fetch_generator(self._CAMPAIGNS, total, params=params)
 
-    def certificates(self, params={}):
-        return self._fetch_generator(self._CERTIFICATES, params)
+    def certificates(self, params={}, total=-1):
+        return self._fetch_generator(self._CERTIFICATES, total, params=params)
 
-    def domains(self, params={}):
-        return self._fetch_generator(self._DOMAINS, params)
+    def domains(self, params={}, total=-1):
+        return self._fetch_generator(self._DOMAINS, total, params=params)
 
-    def emails(self, params={}):
-        return self._fetch_generator(self._EMAILS, params)
+    def emails(self, params={}, total=-1):
+        return self._fetch_generator(self._EMAILS, total, params=params)
 
-    def events(self, params={}):
-        return self._fetch_generator(self._EVENTS, params)
+    def events(self, params={}, total=-1):
+        return self._fetch_generator(self._EVENTS, total, params=params)
 
-    def indicators(self, params={}):
-        return self._fetch_generator(self._INDICATORS, params)
+    def indicators(self, params={}, total=-1):
+        return self._fetch_generator(self._INDICATORS, total, params=params)
 
-    def ips(self, params={}):
-        return self._fetch_generator(self._IPS, params)
+    def ips(self, params={}, total=-1):
+        return self._fetch_generator(self._IPS, total, params=params)
 
-    def pcaps(self, params={}):
-        return self._fetch_generator(self._PCAPS, params)
+    def pcaps(self, params={}, total=-1):
+        return self._fetch_generator(self._PCAPS, total, params=params)
 
-    def raw_datas(self, params={}):
-        return self._fetch_generator(self._RAW_DATA, params)
+    def raw_datas(self, params={}, total=-1):
+        return self._fetch_generator(self._RAW_DATA, total, params=params)
 
-    def samples(self, params={}):
-        return self._fetch_generator(self._SAMPLES, params)
+    def samples(self, params={}, total=-1):
+        return self._fetch_generator(self._SAMPLES, total, params=params)
 
-    def screenshots(self, params={}):
-        return self._fetch_generator(self._SCREENSHOTS, params)
+    def screenshots(self, params={}, total=-1):
+        return self._fetch_generator(self._SCREENSHOTS, total, params=params)
 
-    def targets(self, params={}):
-        return self._fetch_generator(self._TARGETS, params)
+    def targets(self, params={}, total=-1):
+        return self._fetch_generator(self._TARGETS, total, params=params)
 
     # Fetch a single item given the ID.
     def actor(self, id_, params={}):
