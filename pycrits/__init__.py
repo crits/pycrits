@@ -1,3 +1,4 @@
+import os
 import json
 import zipfile
 import hashlib
@@ -338,7 +339,8 @@ class pycrits(object):
     # Helper to handle file uploads.
     # Take either a path to a file on disk or a file object.
     # If given both, the filepath will take precedence.
-    # If we don't have a filename, use the md5 of the data.
+    # If we don't have a filename get it from filepath or use
+    # the md5 of the data from file_obj.
     def _get_file_data(self, file_obj, filepath, filename):
         if not file_obj and not filepath:
             return None
@@ -347,8 +349,15 @@ class pycrits(object):
             file_obj = open(filepath, 'rb')
 
         if not filename:
-            filename = hashlib.md5(file_obj.read()).hexdigest()
-            file_obj.seek(0)
+            # Try to generate it from filepath if we have that.
+            if filepath:
+              filename = os.path.basename(filepath)
+
+            # If someone does something crazy like filepath='/tmp/'
+            # then basename() returns ''. Use MD5 in that case.
+            if not filename:
+                filename = hashlib.md5(file_obj.read()).hexdigest()
+                file_obj.seek(0)
 
         return {'filedata': (filename, file_obj)}
 
