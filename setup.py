@@ -8,7 +8,8 @@ setup(
     description = ("Python interface to CRITs API."),
     license = "BSD",
     keywords = "CRITs",
-    url = "https://github.com/wxsBSD/pycrits",
+    url = "https://github.com/crits/pycrits",
     packages=['pycrits'],
-    long_description="Python interface to the CRITs API."
+    long_description="Python interface to the CRITs API.",
+    install_requires=['requests']
 )
