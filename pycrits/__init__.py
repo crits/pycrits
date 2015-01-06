@@ -16,7 +16,6 @@ class pycritsFetchError(Exception):
 
 class pycrits(object):
     _API_VERSION       = '/api/v1/'
-    _INDICATORS        = 'indicators/'
     _ACTORS            = 'actors/'
     _ACTOR_IDENTIFIERS = 'actoridentifiers/'
     _CAMPAIGNS         = 'campaigns/'
@@ -60,7 +59,7 @@ class pycrits(object):
 
     @username.setter
     def username(self, value):
-        return self_username
+        self._username = value
 
     @property
     def api_key(self):
