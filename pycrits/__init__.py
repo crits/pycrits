@@ -104,7 +104,7 @@ class pycrits(object):
 
     # Actually do the fetching.
     def _do_fetch(self, url, params={}):
-        resp = self.get_url(url, params=params, verify=self._verify)
+        resp = self.get_url(url, params=params, verify=self._verify, proxies=None)
         if resp.status_code != 200:
             raise pycritsFetchError("Response code: %s" % resp.status_code)
 
