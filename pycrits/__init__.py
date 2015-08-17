@@ -5,7 +5,7 @@ import hashlib
 import requests
 
 from zipfile import ZipFile
-from StringIO import StringIO
+from io import BytesIO
 
 class pycritsFetchError(Exception):
     def __init__(self, message):
@@ -287,7 +287,7 @@ class pycrits(object):
         if resp.status_code != 200:
             raise pycritsFetchError("Response code: %s" % resp.status_code)
 
-        return StringIO(resp.content)
+        return BytesIO(resp.content)
 
     # If not a zip file (ie: "No files found") just return an empty list.
     def _unzip_file(self, file_):
