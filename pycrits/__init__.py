@@ -75,7 +75,7 @@ class pycrits(object):
     def verify(self):
         return self._verify
 
-    # Verify can take True, Talse or path to .pem file (to verify the server's cert)
+    # Verify can take True, False or path to .pem file (to verify the server's cert)
     @verify.setter
     def verify(self, value):
         self._verify = value
