@@ -11,5 +11,5 @@ setup(
     url = "https://github.com/crits/pycrits",
     packages=['pycrits'],
     long_description="Python interface to the CRITs API.",
-    install_requires=['requests']
+    install_requires=['requests', 'backoff']
 )

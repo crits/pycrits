@@ -3,6 +3,7 @@ import json
 import zipfile
 import hashlib
 import requests
+import backoff
 
 from zipfile import ZipFile
 from io import BytesIO
@@ -43,6 +44,7 @@ class pycrits(object):
         self._username = username
         self._api_key = api_key
         self._verify = True
+        self._retries = 0
 
     @property
     def host(self):
@@ -73,16 +75,33 @@ class pycrits(object):
     def verify(self):
         return self._verify
 
+    # Verify can take True, False or path to .pem file (to verify the server's cert)
     @verify.setter
     def verify(self, value):
-        self._verify = bool(value)
+        self._verify = value
+
+    @property
+    def retries(self):
+        return self._retries
+
+    @retries.setter
+    def retries(self, value):
+        self._retries = value
+
+    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=self._retries)
+    def post_url(self, url, data, files, verify, proxies):
+            return requests.post(url, data=data, files=files, verify=verify, proxies=proxies)
+
+    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=self._retries)
+    def get_url(self, url, params, verify, proxies):
+            return requests.get(url, params=params, verify=verify, proxies=proxies)
 
     # Used for posting.
     def _post(self, url, params={}, files=None):
         params['username'] = self._username
         params['api_key'] = self._api_key
         url = self._base_url + url
-        resp = requests.post(url, data=params, files=files, verify=self._verify)
+        resp = self.post_url(url, data=params, files=files, verify=self._verify, proxies=None)
         if resp.status_code != 200:
             raise pycritsFetchError("Response code: %s" % resp.status_code)
 
@@ -95,7 +114,7 @@ class pycrits(object):
 
     # Actually do the fetching.
     def _do_fetch(self, url, params={}):
-        resp = requests.get(url, params=params, verify=self._verify)
+        resp = self.get_url(url, params=params, verify=self._verify, proxies=None)
         if resp.status_code != 200:
             raise pycritsFetchError("Response code: %s" % resp.status_code)
 
@@ -283,7 +302,7 @@ class pycrits(object):
         if id_:
             url += id_ + '/'
 
-        resp = requests.get(url, params=params, verify=self._verify)
+        resp = self.get_url(url, params=params, verify=self._verify)
         if resp.status_code != 200:
             raise pycritsFetchError("Response code: %s" % resp.status_code)
 
