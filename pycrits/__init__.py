@@ -363,6 +363,7 @@ class pycrits(object):
     # Add objects to CRITs.
     def add_actor(self, name, source, params={}):
         params['name'] = name
+        params['source'] = source
         return self._post(self._ACTORS, params)
 
     def add_actor_identifier(self, id_type, id_, source, params={}):
