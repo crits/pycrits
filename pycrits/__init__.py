@@ -3,7 +3,6 @@ import json
 import zipfile
 import hashlib
 import requests
-import backoff
 
 from zipfile import ZipFile
 from io import BytesIO
@@ -88,11 +87,9 @@ class pycrits(object):
     def retries(self, value):
         self._retries = value
 
-    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=self._retries)
     def post_url(self, url, data, files, verify, proxies):
             return requests.post(url, data=data, files=files, verify=verify, proxies=proxies)
 
-    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=self._retries)
     def get_url(self, url, params, verify, proxies):
             return requests.get(url, params=params, verify=verify, proxies=proxies)
 
