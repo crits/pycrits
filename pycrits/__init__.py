@@ -44,6 +44,7 @@ class pycrits(object):
         self._api_key = api_key
         self._verify = True
         self._retries = 0
+        self._proxies = None
 
     @property
     def host(self):
@@ -87,6 +88,13 @@ class pycrits(object):
     def retries(self, value):
         self._retries = value
 
+    @property
+    def proxies(self):
+        return self._proxies
+
+    @proxies.setter
+    def proxies(self, value):
+        self._proxies = value
     def post_url(self, url, data, files, verify, proxies):
             return requests.post(url, data=data, files=files, verify=verify, proxies=proxies)
 
@@ -98,7 +106,7 @@ class pycrits(object):
         params['username'] = self._username
         params['api_key'] = self._api_key
         url = self._base_url + url
-        resp = self.post_url(url, data=params, files=files, verify=self._verify, proxies=None)
+        resp = self.post_url(url, data=params, files=files, verify=self._verify, proxies=self._proxies)
         if resp.status_code != 200:
             raise pycritsFetchError("Response code: %s" % resp.status_code)
 
@@ -111,7 +119,7 @@ class pycrits(object):
 
     # Actually do the fetching.
     def _do_fetch(self, url, params={}):
-        resp = self.get_url(url, params=params, verify=self._verify, proxies=None)
+        resp = self.get_url(url, params=params, verify=self._verify, proxies=self._proxies)
         if resp.status_code != 200:
             raise pycritsFetchError("Response code: %s" % resp.status_code)
 
