@@ -95,11 +95,33 @@ class pycrits(object):
     @proxies.setter
     def proxies(self, value):
         self._proxies = value
+
+    def patch_url(self, url, data, params, verify, proxies):
+        return requests.patch(url, data=data, params=params, verify=verify, proxies=proxies)
+
     def post_url(self, url, data, files, verify, proxies):
             return requests.post(url, data=data, files=files, verify=verify, proxies=proxies)
 
     def get_url(self, url, params, verify, proxies):
             return requests.get(url, params=params, verify=verify, proxies=proxies)
+
+    # Used for patching (TLO updates)
+    def _patch(self, url, data={}):
+        params = {
+            'username': self._username,
+            'api_key': self._api_key
+        }
+        url = self._base_url + url
+        resp = self.patch_url(url, data=data, params=params, verify=self._verify, proxies=self._proxies)
+        if resp.status_code != 200:
+            raise pycritsFetchError("Response code: %s" % resp.status_code)
+
+        try:
+            results = json.loads(resp.text)
+        except:
+            raise pycritsFetchError("Unable to load JSON.")
+
+        return results
 
     # Used for posting.
     def _post(self, url, params={}, files=None):
@@ -495,3 +517,7 @@ class pycrits(object):
         params['right_id'] = right_id
         params['rel_type'] = rel_type
         return self._post(self._RELATIONSHIPS, params)
+
+    def update_tlo(self, action, tlo_detail_url, params={}):
+        params['action'] = action
+        return self._patch(tlo_detail_url, params)
